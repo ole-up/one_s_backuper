@@ -8,7 +8,9 @@ ya_disk = yadisk_async.YaDisk(
     token='y0_AgAEA7qkULv3AAkNfQAAAADaugoYV1lXUfc0RL6HMKokFd_IxSsK5Io')
 
 
-def recursive_upload(ya_disk, from_dir, to_dir, n_parallel_requests=5):
+def recursive_upload(ya_disk: yadisk_async.YaDisk, from_dir: str, to_dir: str,
+                     n_parallel_requests=5):
+    """Рекурсивная загрузка файлов на Я.Диск"""
     loop = asyncio.get_event_loop()
     try:
         async def upload_files(queue):
