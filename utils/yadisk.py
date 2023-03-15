@@ -5,10 +5,10 @@ import posixpath
 import yadisk_async
 
 ya_disk = yadisk_async.YaDisk(
-    token='y0_AgAEA7qkULv3AAkNfQAAAADaugoYV1lXUfc0RL6HMKokFd_IxSsK5Io')
+    token='y0_AgAEA7qkULv3AAjxkwAAAADXvzixOf0e6LtFT4eSyoZWe8fFUQUj9VU')
+#UMK token
 
-
-def recursive_upload(ya_disk: yadisk_async.YaDisk, from_dir: str, to_dir: str,
+def recursive_upload(from_dir: str, to_dir: str,
                      n_parallel_requests=5):
     """Рекурсивная загрузка файлов на Я.Диск"""
     loop = asyncio.get_event_loop()
@@ -66,3 +66,25 @@ def recursive_upload(ya_disk: yadisk_async.YaDisk, from_dir: str, to_dir: str,
             loop.run_until_complete(asyncio.gather(*tasks))
     finally:
         loop.run_until_complete(ya_disk.close())
+
+
+
+def list_dirs(path):
+    """Список папок по заданному пути"""
+    loop = asyncio.get_event_loop()
+
+    async def listdirs(path):
+        return [i async for i in await ya_disk.listdir(path)]
+
+    list_dir = loop.run_until_complete(listdirs(path))
+    loop.run_until_complete(ya_disk.close())
+    loop.close()
+    return list_dir
+
+
+async def remove_file(path):
+    await ya_disk.remove(path, permanently=True)
+
+
+if __name__ == '__main__':
+    print(list_dirs("/dyachenko"))

@@ -1,0 +1,1 @@
+%1 CONFIG /S %2 /N %3 /P %4 /DumpIB %5 -NoTruncate
