@@ -2,6 +2,7 @@ import os
 import posixpath
 
 import yadisk
+from progress.bar import IncrementalBar
 
 from config import YADISK_TOKEN
 
@@ -21,16 +22,18 @@ def recursive_upload(from_dir, to_dir):
             print(f'Создаем папку {dir_path}')
         except yadisk.exceptions.PathExistsError:
             print(f'Папка {dir_path} уже существует')
-
+        bar = IncrementalBar('Выгрузка файлов на Я.Диск: ', max=len(files))
         for file in files:
             file_path = posixpath.join(dir_path, file)
             p_sys = p.replace("/", os.path.sep)
             in_path = os.path.join(from_dir, p_sys, file)
             try:
-                print(f'Загружаем {in_path} -> {file_path}')
+                # print(f'Загружаем {in_path} -> {file_path}')
                 ya_disk.upload(in_path, file_path)
             except yadisk.exceptions.PathExistsError:
                 pass
+            bar.next()
+        bar.finish()
 
 
 if __name__ == '__main__':

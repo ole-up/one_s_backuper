@@ -27,7 +27,7 @@ def terminate_one_s_sessions(cluster_user, cluster_password):
                                       cluster_password, session)
 
 def kill_processes():
-    res = subprocess.run(f'{os.getcwd()}\\utils\\taskkill.bat', shell=True)
+    res = subprocess.run(f'{os.getcwd()}\\utils\\taskkill.bat', shell=False)
     return res
 
 def get_list_basesname(cluster_user, cluster_password):
@@ -55,7 +55,7 @@ def backup_server_base(one_s_server, infobase_name, infobase_user,
     backup_folder = f'{backup_path}\\{datetime.datetime.now().date()}'
     if not os.path.exists(backup_folder):
         os.mkdir(backup_folder)
-    subprocess.run([f'{os.getcwd()}\\utils\\backup_command.bat', f'{platform_path}\\1cestart.exe', f'{one_s_server}\\{infobase_name}', infobase_user, infobase_password, f'{backup_folder}\\{backup_name}' ], shell=True)
+    subprocess.run([f'{os.getcwd()}\\utils\\backup_command.bat', f'{platform_path}\\1cestart.exe', f'{one_s_server}\\{infobase_name}', infobase_user, infobase_password, f'{backup_folder}\\{backup_name}' ], shell=False)
     time.sleep(180)
 
 
@@ -75,7 +75,7 @@ def backup_server_base(one_s_server, infobase_name, infobase_user,
 def get_clusters():
     """Получить список кластеров сервера 1С"""
     clusters = server_agent.GetClusters()
-    print(f'Найдено кластеров 1С- {len(clusters)}')
+    # print(f'Найдено кластеров 1С- {len(clusters)}')
     return clusters
 
 
@@ -84,7 +84,7 @@ def get_working_processes(cluster, cluster_user,
     """Получить список рабочих процессов кластера"""
     server_agent.Authenticate(cluster, cluster_user, cluster_password)
     processes = server_agent.GetWorkingProcesses(cluster)
-    print(f'Найдено процессов - {len(processes)}')
+    # print(f'Найдено процессов - {len(processes)}')
     return processes
 
 
@@ -102,7 +102,7 @@ def get_infobase_sessions(cluster, cluster_user,
     """Получить список сессий для информационной базы"""
     server_agent.Authenticate(cluster, cluster_user, cluster_password)
     sessions = server_agent.GetInfoBaseSessions(cluster, base)
-    print(f'Найдено сессий - {len(sessions)}')
+    # print(f'Найдено сессий - {len(sessions)}')
     return sessions
 
 
@@ -113,10 +113,5 @@ def terminate_session(cluster, cluster_user, cluster_password,
     server_agent.TerminateSession(cluster, session)
 
 if __name__ == '__main__':
-    import locale
-    import sys
 
     backup_server_base('localhost', 'test', 'Администратор', 'test', '.')
-    print(sys.getdefaultencoding())
-    print(locale.getpreferredencoding())
-    print(sys.stdout.encoding)

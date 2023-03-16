@@ -1,3 +1,5 @@
+from progress.bar import IncrementalBar
+
 import config
 from utils import disk
 from utils import one_s
@@ -11,6 +13,10 @@ def main():
             bases_in_cluster = one_s.get_bases_in_cluster(cluster,
                                                           config.CLUSTER_USER,
                                                           config.CLUSTER_PASSWORD)
+
+            print('Начинаем выгрузку баз: ')
+            bar = IncrementalBar('Выгрузка баз: ', max=len(bases_in_cluster))
+
             for infobase in bases_in_cluster:
 
                 if infobase.Name not in config.EXCLUDE_BASE:
@@ -41,11 +47,16 @@ def main():
                                              infobase_user,
                                              infobase_password,
                                              config.BACKUP_FOLDER)
+                    bar.next()
+            bar.finish()
+            print('Выгрузка баз окончена!')
 
     if config.YADISK_UPLOAD:
+        print('Начинаем выгрузку на Яндекс.Диск: ')
         yadisk.recursive_upload(config.BACKUP_FOLDER, config.YADISK_FOLDER)
         if not config.SAVE_BACKUP_AFTER_YADISK_UPLOAD:
             disk.clear_folder(config.BACKUP_FOLDER)
+        print('Выгрузка на Яндекс.Диск закончена!')
 
     one_s.kill_processes()
 
