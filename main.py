@@ -1,6 +1,7 @@
 from progress.bar import IncrementalBar
 
 import config
+import utils.disk
 from utils import disk
 from utils import one_s
 from utils import yadisk
@@ -59,6 +60,15 @@ def main():
         print('Выгрузка на Яндекс.Диск закончена!')
 
     one_s.kill_processes()
+
+    if config.HOW_LONG_KEEP_BACKUP:
+        if config.YADISK_UPLOAD:
+            pass
+        else:
+            folders_for_delete = utils.disk.get_list_folder_for_clean(
+                config.BACKUP_FOLDER)
+            for folder in folders_for_delete:
+                utils.disk.delete_folder(folder)
 
 
 if __name__ == '__main__':
