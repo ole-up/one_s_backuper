@@ -1,13 +1,17 @@
 import os.path
 import datetime
 import subprocess
+import sys
 import time
+import logging
 
+import log.utils_log_config
 from comtypes.client import CreateObject
 
 engine = CreateObject('V83.COMConnector')
 server_agent = engine.ConnectAgent('localhost')
 
+utils_logger = logging.getLogger('utils' + '_' + __name__)
 
 def terminate_one_s_sessions(cluster_user, cluster_password):
     one_s_clusters = get_clusters()
@@ -25,9 +29,14 @@ def terminate_one_s_sessions(cluster_user, cluster_password):
                 for session in sessions:
                     terminate_session(cluster, cluster_user,
                                       cluster_password, session)
+    else:
+        print("В кластере базы не обнаружены!")
+        sys.exit(1)
 
 def kill_processes():
-    res = subprocess.run(f'{os.getcwd()}\\utils\\taskkill.bat', shell=False)
+    res = subprocess.run(f'{os.getcwd()}\\utils\\taskkill.bat', shell=True, stderr=subprocess.PIPE)
+    if res.stderr:
+        utils_logger.error(f'Ошибка закрытия активных процессов: {res.stderr}')
     return res
 
 def get_list_basesname(cluster_user, cluster_password):
@@ -50,12 +59,16 @@ def backup_server_base(one_s_server, infobase_name, infobase_user,
         platform_path = 'C:\\Program Files (x86)\\1cv8\\common'
     else:
         print('Ошибка. Платформа не найдена!')
-        #TODO Сделать исключение
-    backup_name = f'{infobase_name}_{datetime.datetime.now().date()}.1cbackup'
+        utils_logger.error('Ошибка. Платформа не найдена!')
+        sys.exit(1)
+    backup_name = f'{infobase_name}_{datetime.datetime.now().date()}.1cbckp'
     backup_folder = f'{backup_path}\\{datetime.datetime.now().date()}'
     if not os.path.exists(backup_folder):
         os.mkdir(backup_folder)
-    subprocess.run([f'{os.getcwd()}\\utils\\backup_command.bat', f'{platform_path}\\1cestart.exe', f'{one_s_server}\\{infobase_name}', infobase_user, infobase_password, f'{backup_folder}\\{backup_name}' ], shell=False)
+    res = subprocess.run([f'{os.getcwd()}\\utils\\backup_command.bat', f'{platform_path}\\1cestart.exe', f'{one_s_server}\\{infobase_name}', infobase_user, infobase_password, f'{backup_folder}\\{backup_name}' ], shell=False, stderr=subprocess.PIPE
+                   )
+    if res.stderr:
+        utils_logger.error(f'Ошибка при выгрузке бэкапа: {res.stderr}')
     time.sleep(180)
 
 

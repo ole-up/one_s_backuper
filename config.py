@@ -47,3 +47,6 @@ HOW_LONG_KEEP_BACKUP = 14
 
 # Сохранять или нет бэкапы на начало квартала
 KEEP_QUARTERLY_BACKUP = True
+
+# Выключать компьютер по завершению бэкапа или нет
+SHUTDOWN_AFTER_BACKUP = False

@@ -1,10 +1,10 @@
 from progress.bar import IncrementalBar
 
 import config
-import utils.disk
 from utils import disk
 from utils import one_s
-from utils import yadisk
+from utils import system
+from utils import ya_disk
 
 
 def main():
@@ -35,8 +35,7 @@ def main():
 
                         infobase_user = \
                             list(config.INFOBASES_USER.get(
-                                infobase.Name).keys())[
-                                0]
+                                infobase.Name).keys())[0]
                         infobase_password = list(config.INFOBASES_USER.get(
                             infobase.Name).values())[0]
                     else:
@@ -54,7 +53,7 @@ def main():
 
     if config.YADISK_UPLOAD:
         print('Начинаем выгрузку на Яндекс.Диск: ')
-        yadisk.recursive_upload(config.BACKUP_FOLDER, config.YADISK_FOLDER)
+        ya_disk.recursive_upload(config.BACKUP_FOLDER, config.YADISK_FOLDER)
         if not config.SAVE_BACKUP_AFTER_YADISK_UPLOAD:
             disk.clear_folder(config.BACKUP_FOLDER)
         print('Выгрузка на Яндекс.Диск закончена!')
@@ -63,12 +62,18 @@ def main():
 
     if config.HOW_LONG_KEEP_BACKUP:
         if config.YADISK_UPLOAD:
-            pass
+            folder_for_delete = ya_disk.get_list_folder_for_clean(
+                config.BACKUP_FOLDER)
+            for folder in folder_for_delete:
+                ya_disk.delete_folder(folder)
         else:
-            folders_for_delete = utils.disk.get_list_folder_for_clean(
+            folders_for_delete = disk.get_list_folder_for_clean(
                 config.BACKUP_FOLDER)
             for folder in folders_for_delete:
-                utils.disk.delete_folder(folder)
+                disk.delete_folder(folder)
+
+    if config.SHUTDOWN_AFTER_BACKUP:
+        system.shutdown_windows()
 
 
 if __name__ == '__main__':
