@@ -1,3 +1,4 @@
+#coding=cp1251
 import os.path
 import datetime
 import subprocess
@@ -8,8 +9,14 @@ import logging
 import log.utils_log_config
 from comtypes.client import CreateObject
 
+
 engine = CreateObject('V83.COMConnector')
 server_agent = engine.ConnectAgent('localhost')
+
+# app_engine = CreateObject('V83.Application')
+# connection_string = "Srvr=localhost;Ref=test;Usr=Администратор;Pwd=test;"
+# app_agent = app_engine.Connect(connection_string)
+# base_connection = engine.Connect(connection_string)
 
 utils_logger = logging.getLogger('utils' + '_' + __name__)
 
@@ -20,23 +27,23 @@ def terminate_one_s_sessions(cluster_user, cluster_password):
             bases_in_cluster = get_bases_in_cluster(cluster,
                                                     cluster_user,
                                                     cluster_password)
-            print(f'РќР°Р№РґРµРЅРѕ Р±Р°Р· РІ РєР»Р°СЃС‚РµСЂРµ 1РЎ - {len(bases_in_cluster)} ')
+            print(f'Найдено баз в кластере 1С - {len(bases_in_cluster)} ')
             for infobase in bases_in_cluster:
                 sessions = get_infobase_sessions(cluster, cluster_user,
                                                  cluster_password,
                                                  infobase)
-                print(f'РљРѕР»РёС‡РµСЃС‚РІРѕ СЃРµСЃСЃРёР№ - {len(sessions)}')
+                print(f'Количество сессий - {len(sessions)}')
                 for session in sessions:
                     terminate_session(cluster, cluster_user,
                                       cluster_password, session)
     else:
-        print("Р’ РєР»Р°СЃС‚РµСЂРµ Р±Р°Р·С‹ РЅРµ РѕР±РЅР°СЂСѓР¶РµРЅС‹!")
+        print("В кластере базы не обнаружены!")
         sys.exit(1)
 
 def kill_processes():
     res = subprocess.run(f'{os.getcwd()}\\utils\\taskkill.bat', shell=True, stderr=subprocess.PIPE)
     if res.stderr:
-        utils_logger.error(f'РћС€РёР±РєР° Р·Р°РєСЂС‹С‚РёСЏ Р°РєС‚РёРІРЅС‹С… РїСЂРѕС†РµСЃСЃРѕРІ: {res.stderr}')
+        utils_logger.error(f'Ошибка закрытия активных процессов: {res.stderr}')
     return res
 
 def get_list_basesname(cluster_user, cluster_password):
@@ -58,8 +65,8 @@ def backup_server_base(one_s_server, infobase_name, infobase_user,
     elif os.path.isdir('C:\\Program Files (x86)\\1cv8\\common'):
         platform_path = 'C:\\Program Files (x86)\\1cv8\\common'
     else:
-        print('РћС€РёР±РєР°. РџР»Р°С‚С„РѕСЂРјР° РЅРµ РЅР°Р№РґРµРЅР°!')
-        utils_logger.error('РћС€РёР±РєР°. РџР»Р°С‚С„РѕСЂРјР° РЅРµ РЅР°Р№РґРµРЅР°!')
+        print('Ошибка. Платформа не найдена!')
+        utils_logger.error('Ошибка. Платформа не найдена!')
         sys.exit(1)
     backup_name = f'{infobase_name}_{datetime.datetime.now().date()}.1cbckp'
     backup_folder = f'{backup_path}\\{datetime.datetime.now().date()}'
@@ -68,14 +75,14 @@ def backup_server_base(one_s_server, infobase_name, infobase_user,
     res = subprocess.run([f'{os.getcwd()}\\utils\\backup_command.bat', f'{platform_path}\\1cestart.exe', f'{one_s_server}\\{infobase_name}', infobase_user, infobase_password, f'{backup_folder}\\{backup_name}' ], shell=False, stderr=subprocess.PIPE
                    )
     if res.stderr:
-        utils_logger.error(f'РћС€РёР±РєР° РїСЂРё РІС‹РіСЂСѓР·РєРµ Р±СЌРєР°РїР°: {res.stderr}')
+        utils_logger.error(f'Ошибка при выгрузке бэкапа: {res.stderr}')
     time.sleep(180)
 
 
 # clusters = server_agent.GetClusters()
 # if len(clusters) != 0:
 #     for cluster in clusters:
-#         server_agent.Authenticate(cluster, 'РђРґРјРёРЅРёСЃС‚СЂР°С‚РѕСЂ', 'test')
+#         server_agent.Authenticate(cluster, 'Администратор', 'test')
 #         working_process = server_agent.GetWorkingProcesses(cluster)
 #         bases_in_cluster = server_agent.GetInfoBases(cluster)
 #         for base in bases_in_cluster:
@@ -86,45 +93,64 @@ def backup_server_base(one_s_server, infobase_name, infobase_user,
 #                 server_agent.TerminateSession(cluster, session)
 
 def get_clusters():
-    """РџРѕР»СѓС‡РёС‚СЊ СЃРїРёСЃРѕРє РєР»Р°СЃС‚РµСЂРѕРІ СЃРµСЂРІРµСЂР° 1РЎ"""
+    """Получить список кластеров сервера 1С"""
     clusters = server_agent.GetClusters()
-    # print(f'РќР°Р№РґРµРЅРѕ РєР»Р°СЃС‚РµСЂРѕРІ 1РЎ- {len(clusters)}')
+    # print(f'Найдено кластеров 1С- {len(clusters)}')
     return clusters
 
 
 def get_working_processes(cluster, cluster_user,
                           cluster_password):
-    """РџРѕР»СѓС‡РёС‚СЊ СЃРїРёСЃРѕРє СЂР°Р±РѕС‡РёС… РїСЂРѕС†РµСЃСЃРѕРІ РєР»Р°СЃС‚РµСЂР°"""
+    """Получить список рабочих процессов кластера"""
     server_agent.Authenticate(cluster, cluster_user, cluster_password)
     processes = server_agent.GetWorkingProcesses(cluster)
-    # print(f'РќР°Р№РґРµРЅРѕ РїСЂРѕС†РµСЃСЃРѕРІ - {len(processes)}')
+    # print(f'Найдено процессов - {len(processes)}')
     return processes
 
 
 def get_bases_in_cluster(cluster, cluster_user,
                          cluster_password):
-    """РџРѕР»СѓС‡РёС‚СЊ СЃРїРёСЃРѕРє РёРЅС„РѕСЂРјР°С†РёРѕРЅРЅС‹С… Р±Р°Р· РІ РєР»Р°СЃС‚РµСЂРµ"""
+    """Получить список информационных баз в кластере"""
     server_agent.Authenticate(cluster, cluster_user, cluster_password)
     infobases = server_agent.GetInfoBases(cluster)
-    print(f'РќР°Р№РґРµРЅРѕ Р±Р°Р· - {len(infobases)}')
+    print(f'Найдено баз - {len(infobases)}')
     return infobases
 
 
 def get_infobase_sessions(cluster, cluster_user,
                           cluster_password, base):
-    """РџРѕР»СѓС‡РёС‚СЊ СЃРїРёСЃРѕРє СЃРµСЃСЃРёР№ РґР»СЏ РёРЅС„РѕСЂРјР°С†РёРѕРЅРЅРѕР№ Р±Р°Р·С‹"""
+    """Получить список сессий для информационной базы"""
     server_agent.Authenticate(cluster, cluster_user, cluster_password)
     sessions = server_agent.GetInfoBaseSessions(cluster, base)
-    # print(f'РќР°Р№РґРµРЅРѕ СЃРµСЃСЃРёР№ - {len(sessions)}')
+    # print(f'Найдено сессий - {len(sessions)}')
     return sessions
 
 
 def terminate_session(cluster, cluster_user, cluster_password,
                       session):
-    """РћС‚РєР»СЋС‡РёС‚СЊ СЃРµСЃСЃРёСЋ РёРЅС„РѕСЂРјР°С†РёРѕРЅРЅРѕР№ Р±Р°Р·С‹"""
+    """Отключить сессию информационной базы"""
     server_agent.Authenticate(cluster, cluster_user, cluster_password)
     server_agent.TerminateSession(cluster, session)
 
 if __name__ == '__main__':
 
-    backup_server_base('localhost', 'test', 'РђРґРјРёРЅРёСЃС‚СЂР°С‚РѕСЂ', 'test', '.')
+    # backup_server_base('localhost', 'test', 'Администратор', 'test', '.')
+    # server_agent.Authenticate('localhost', 'Администратор', 'test')
+    base_list = get_bases_in_cluster(get_clusters()[0], 'Администратор', 'test')
+    process_list = get_working_processes(get_clusters()[0], 'Администратор', 'test')
+    for process in process_list:
+        conn_string = process.HostName + ":" + str(process.MainPort)
+        connect = engine.ConnectWorkingProcess(conn_string)
+        connect.AddAuthentication('Администратор', 'test')
+        bases = connect.GetInfoBases()
+        # print(dir(connect))
+        # print(dir(bases))
+        # print(process.License.__str__())
+    for base in bases:
+        # print(dir(base))
+        print(base.ScheduledJobsDenied)
+        base.ScheduledJobsDenied = True
+        connect.UpdateInfoBase(base)
+        # print(dir(connect))
+    #
+    # print(dir(server_agent))
