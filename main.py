@@ -8,8 +8,6 @@ from utils import disk, one_s, system, ya_disk
 
 
 def main():
-    current_scheduled_jobs_denied = False
-    current_sessions_denied = False
     one_s_clusters = one_s.get_clusters()
     temp_dir = tempfile.mkdtemp()
     if len(one_s_clusters) != 0:
@@ -44,10 +42,10 @@ def main():
                             infobase_password = config.DEFAULT_INFOBASE_PASSWORD
 
                         one_s.backup_server_base(config.ONE_S_SERVER,
-                                                infobase.Name,
-                                                infobase_user,
-                                                infobase_password,
-                                                temp_dir)
+                                                 infobase.Name,
+                                                 infobase_user,
+                                                 infobase_password,
+                                                 temp_dir)
                         infobase.ScheduledJobsDenied = current_scheduled_jobs_denied
                         infobase.SessionsDenied = current_sessions_denied
                         infobase.PermissionCode = ''
