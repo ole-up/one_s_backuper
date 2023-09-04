@@ -85,7 +85,6 @@ def backup_server_base(one_s_server, infobase_name, infobase_user,
                           f'/N {infobase_user}', f'/P {infobase_password}', f'/DumpIB {backup_folder}\\{backup_name}',
                           '-NoTruncate', f'/UC {config.PERMISSION_CODE}'], shell=True, stderr=subprocess.PIPE,
                          timeout=600)
-    print(res.returncode, res.stdout)
     # if res.stderr:
     #     utils_logger.error(f'Ошибка при выгрузке бэкапа: {res.stderr}')
     time.sleep(180)  # сделана задержка, т.к. процесс выгрузки всегда возвращается с нулевым кодом выполнения команды

@@ -28,7 +28,7 @@ def main():
 
                 for infobase in bases_in_process:
                     if infobase.Name not in config.EXCLUDE_BASE:
-                        current_scheduled_jobs_denied = infobase. ScheduledJobsDenied
+                        current_scheduled_jobs_denied = infobase.ScheduledJobsDenied
                         current_sessions_denied = infobase.SessionsDenied
                         infobase.ScheduledJobsDenied = True
                         infobase.SessionsDenied = True
@@ -53,7 +53,7 @@ def main():
                         infobase.PermissionCode = ''
                         connect.UpdateInfoBase(infobase)
                     bar.next()
-            bar.finish()
+                bar.finish()
 
             print('Выгрузка баз окончена!')
 
