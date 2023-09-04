@@ -1,4 +1,4 @@
-#coding=cp1251
+# coding=cp1251
 import os.path
 import datetime
 import subprocess
@@ -6,9 +6,9 @@ import sys
 import time
 import logging
 
+import config
 import log.utils_log_config
 from comtypes.client import CreateObject
-
 
 engine = CreateObject('V83.COMConnector')
 server_agent = engine.ConnectAgent('localhost')
@@ -19,6 +19,7 @@ server_agent = engine.ConnectAgent('localhost')
 # base_connection = engine.Connect(connection_string)
 
 utils_logger = logging.getLogger('utils' + '_' + __name__)
+
 
 def terminate_one_s_sessions(cluster_user, cluster_password):
     one_s_clusters = get_clusters()
@@ -40,11 +41,13 @@ def terminate_one_s_sessions(cluster_user, cluster_password):
         print("В кластере базы не обнаружены!")
         sys.exit(1)
 
+
 def kill_processes():
     res = subprocess.run(f'{os.getcwd()}\\utils\\taskkill.bat', shell=True, stderr=subprocess.PIPE)
     if res.stderr:
         utils_logger.error(f'Ошибка закрытия активных процессов: {res.stderr}')
     return res
+
 
 def get_list_basesname(cluster_user, cluster_password):
     result = []
@@ -57,8 +60,9 @@ def get_list_basesname(cluster_user, cluster_password):
             result.append(infobase.Name)
     return result
 
+
 def backup_server_base(one_s_server, infobase_name, infobase_user,
-                                                infobase_password, backup_path):
+                       infobase_password, backup_path):
     platform_path = ''
     if os.path.isdir('C:\\Program Files\\1cv8\\common'):
         platform_path = 'C:\\Program Files\\1cv8\\common'
@@ -72,8 +76,11 @@ def backup_server_base(one_s_server, infobase_name, infobase_user,
     backup_folder = f'{backup_path}\\{datetime.datetime.now().date()}'
     if not os.path.exists(backup_folder):
         os.mkdir(backup_folder)
-    res = subprocess.run([f'{os.getcwd()}\\utils\\backup_command.bat', f'{platform_path}\\1cestart.exe', f'{one_s_server}\\{infobase_name}', infobase_user, infobase_password, f'{backup_folder}\\{backup_name}' ], shell=False, stderr=subprocess.PIPE
-                   )
+    res = subprocess.run([f'{os.getcwd()}\\utils\\backup_command.bat', f'{platform_path}\\1cestart.exe',
+                          f'{one_s_server}\\{infobase_name}', infobase_user, infobase_password,
+                          f'{backup_folder}\\{backup_name}', f'{config.PERMISSION_CODE}'], shell=False,
+                         stderr=subprocess.PIPE
+                         )
     if res.stderr:
         utils_logger.error(f'Ошибка при выгрузке бэкапа: {res.stderr}')
     time.sleep(180)
@@ -132,6 +139,7 @@ def terminate_session(cluster, cluster_user, cluster_password,
     server_agent.Authenticate(cluster, cluster_user, cluster_password)
     server_agent.TerminateSession(cluster, session)
 
+
 if __name__ == '__main__':
 
     # backup_server_base('localhost', 'test', 'Администратор', 'test', '.')
@@ -149,6 +157,10 @@ if __name__ == '__main__':
     for base in bases:
         # print(dir(base))
         print(base.ScheduledJobsDenied)
+        print(base.SessionsDenied)
+        print(base.PermissionCode)
+        base.PermissionCode = config.CLUSTER_PASSWORD
+        print(base.PermissionCode)
         base.ScheduledJobsDenied = True
         connect.UpdateInfoBase(base)
         # print(dir(connect))

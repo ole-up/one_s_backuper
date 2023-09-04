@@ -1,1 +1,1 @@
-%1 CONFIG /S %2 /N %3 /P %4 /DumpIB %5 -NoTruncate
+%1 CONFIG /S %2 /DisableStartupMessages /N %3 /P %4 /DumpIB %5 -NoTruncate /UC %6
