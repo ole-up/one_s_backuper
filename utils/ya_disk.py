@@ -44,14 +44,12 @@ def get_list_folder_for_clean(path: str):
                        list(yandex_disk.listdir(path))]
         for folder in folder_list:
             folder_date = datetime.datetime.strptime(folder, '%Y-%m-%d').date()
-            if (
-                    datetime.datetime.now().date() - folder_date) > datetime.timedelta(
-                days=config.HOW_LONG_KEEP_BACKUP):
+            if (datetime.datetime.now().date() - folder_date) > datetime.timedelta(days=config.HOW_LONG_KEEP_BACKUP):
                 if config.KEEP_QUARTERLY_BACKUP:
-                    if folder_date.day == 1 and folder_date.month in [1, 4, 7,
-                                                                      10]:
+                    if folder_date.day == 1 and folder_date.month in [1, 4, 7, 10]:
                         continue
-                    folder_for_clean.append(posixpath.join(path, folder))
+                folder_for_clean.append(posixpath.join(path, folder))
+                print(f'Folder {folder} add to delete')
     return folder_for_clean
 
 
