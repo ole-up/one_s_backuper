@@ -69,18 +69,13 @@ def backup_server_base(one_s_server, infobase_name, infobase_user,
     elif os.path.isdir('C:\\Program Files (x86)\\1cv8\\common'):
         platform_path = 'C:\\Program Files (x86)\\1cv8\\common'
     else:
-        print('Ошибка. Платформа не найдена!')
+        # print('Ошибка. Платформа не найдена!')
         utils_logger.error('Ошибка. Платформа не найдена!')
         sys.exit(1)
     backup_name = f'{infobase_name}_{datetime.datetime.now().date()}.1cbckp'
     backup_folder = f'{backup_path}\\{datetime.datetime.now().date()}'
     if not os.path.exists(backup_folder):
         os.mkdir(backup_folder)
-    # res = subprocess.run([f'{os.getcwd()}\\utils\\backup_command.bat', f'{platform_path}\\1cestart.exe',
-    #                       f'{one_s_server}\\{infobase_name}', infobase_user, infobase_password,
-    #                       f'{backup_folder}\\{backup_name}', f'{config.PERMISSION_CODE}'], shell=False,
-    #                      stderr=subprocess.PIPE
-    #                      )
     res = subprocess.run([f'{platform_path}\\1cestart.exe', 'CONFIG', f'/S {one_s_server}\\{infobase_name}',
                           f'/N {infobase_user}', f'/P {infobase_password}', f'/DumpIB {backup_folder}\\{backup_name}',
                           '-NoTruncate', f'/UC {config.PERMISSION_CODE}'], shell=True, stderr=subprocess.PIPE,
@@ -124,7 +119,7 @@ def get_bases_in_cluster(cluster, cluster_user,
     """Получить список информационных баз в кластере"""
     server_agent.Authenticate(cluster, cluster_user, cluster_password)
     infobases = server_agent.GetInfoBases(cluster)
-    print(f'Найдено баз - {len(infobases)}')
+    # print(f'Найдено баз - {len(infobases)}')
     return infobases
 
 

@@ -1,3 +1,4 @@
+import logging
 import tempfile
 import shutil
 
@@ -5,9 +6,11 @@ from progress.bar import IncrementalBar
 
 import config
 from utils import disk, one_s, system, ya_disk
+from log import backuper_log_config
 
 
 def main():
+    logger = logging.getLogger('backuper')
     one_s_clusters = one_s.get_clusters()
     temp_dir = tempfile.mkdtemp()
     if len(one_s_clusters) != 0:
@@ -27,14 +30,16 @@ def main():
                     continue
                 connect.AddAuthentication(config.CLUSTER_USER, config.CLUSTER_PASSWORD)
                 bases_in_process = connect.GetInfoBases()
-                print(f'Обнаружено {len(bases_in_process)} баз на сервере.')
-                print(f'В списке исключений {len(config.EXCLUDE_BASE)} баз.')
+                print(
+                    f'Обнаружено {len(bases_in_process)} баз на сервере, из них в списке исключений {len(config.EXCLUDE_BASE)}.')
                 print('Начинаем выгрузку баз: ')
                 bar = IncrementalBar('Выгрузка баз: ',
-                                     max=len(bases_in_process)-len(config.EXCLUDE_BASE))
+                                     max=len(bases_in_process) - len(config.EXCLUDE_BASE))
 
                 for infobase in bases_in_process:
                     if infobase.Name not in config.EXCLUDE_BASE:
+                        if config.LOG:
+                            logger.info(f'Начата выгрузка базы {infobase.Name}')
                         try:
                             base_in_claster = next((base for base in bases_in_cluster if base.Name == infobase.Name),
                                                    None)
@@ -75,9 +80,12 @@ def main():
                             connect.UpdateInfoBase(infobase)
                         except Exception as e:
                             print(f'\nОшибка доступа к базе: {e}')
+                            if config.LOG:
+                                logger.critical(f'Ошибка выгрузки базы {infobase.name}:\n{e}')
+                        if config.LOG:
+                            logger.info(f'Выгрузка базы {infobase.Name} закончена')
                     bar.next()
                 bar.finish()
-
             print('Выгрузка баз окончена!')
 
     if config.HOW_LONG_KEEP_BACKUP:
@@ -94,12 +102,23 @@ def main():
 
     if config.SAVE_BACKUP_ON_LOCAL_DISK:
         print('Копируем выгрузки в локальный бэкап')
-        shutil.copytree(temp_dir, config.BACKUP_FOLDER, dirs_exist_ok=True)
+        try:
+            shutil.copytree(temp_dir, config.BACKUP_FOLDER, dirs_exist_ok=True)
+        except Exception as e:
+            print('Не удалось скопировать базы в локальный бэкап')
+            if config.LOG:
+                logger.error(f'Не удалось скопировать базы в локальный архив: \n{e}')
         print('Копирование в локальный бэкап закончено!')
 
     if config.YADISK_UPLOAD:
         print('Начинаем выгрузку на Яндекс.Диск: ')
-        ya_disk.recursive_upload(temp_dir, config.YADISK_FOLDER)
+        try:
+            ya_disk.recursive_upload(temp_dir, config.YADISK_FOLDER)
+        except Exception as e:
+            print('Не удалось выгрузить бэкапы на Я.Диск')
+            if config.LOG:
+                logger.error(f'Не удалось выгрузить бэкапы на Я.Диск: \n{e}')
+
         print('Выгрузка на Яндекс.Диск закончена!')
 
     shutil.rmtree(temp_dir)
