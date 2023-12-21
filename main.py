@@ -36,32 +36,31 @@ def main():
                 bar = IncrementalBar('Выгрузка баз: ',
                                      max=len(bases_in_process) - len(config.EXCLUDE_BASE))
 
-                for infobase in bases_in_process:
+                for infobase in bases_in_cluster:
                     if infobase.Name not in config.EXCLUDE_BASE:
                         if config.LOG:
                             logger.info(f'Начата выгрузка базы {infobase.Name}')
                         try:
-                            base_in_claster = next((base for base in bases_in_cluster if base.Name == infobase.Name),
-                                                   None)
-                            if base_in_claster:
-                                base_sessions = one_s.get_infobase_sessions(cluster,
-                                                                            config.CLUSTER_USER,
-                                                                            config.CLUSTER_PASSWORD,
-                                                                            base_in_claster)
-                                for session in base_sessions:
-                                    one_s.terminate_session(cluster,
-                                                            config.CLUSTER_USER,
-                                                            config.CLUSTER_PASSWORD,
-                                                            session)
-                            current_scheduled_jobs_denied = infobase.ScheduledJobsDenied
-                            current_sessions_denied = infobase.SessionsDenied
-                            infobase.ScheduledJobsDenied = True
-                            infobase.SessionsDenied = True
-                            infobase.PermissionCode = config.PERMISSION_CODE
-                            infobase.DeniedMessage = 'База заблокирована для выполнения резервного копирования'
-                            connect.UpdateInfoBase(infobase)
-                            if infobase.Name in config.INFOBASES_USER.keys():
+                            base_in_processes = next((base for base in bases_in_process if base.Name == infobase.Name),
+                                                     None)
+                            base_sessions = one_s.get_infobase_sessions(cluster,
+                                                                        config.CLUSTER_USER,
+                                                                        config.CLUSTER_PASSWORD,
+                                                                        infobase)
+                            for session in base_sessions:
+                                one_s.terminate_session(cluster,
+                                                        config.CLUSTER_USER,
+                                                        config.CLUSTER_PASSWORD,
+                                                        session)
 
+                            current_scheduled_jobs_denied = base_in_processes.ScheduledJobsDenied
+                            current_sessions_denied = base_in_processes.SessionsDenied
+                            base_in_processes.ScheduledJobsDenied = True
+                            base_in_processes.SessionsDenied = True
+                            base_in_processes.PermissionCode = config.PERMISSION_CODE
+                            base_in_processes.DeniedMessage = 'База заблокирована для выполнения резервного копирования'
+                            connect.UpdateInfoBase(base_in_processes)
+                            if infobase.Name in config.INFOBASES_USER.keys():
                                 infobase_user = list(config.INFOBASES_USER.get(infobase.Name).keys())[0]
                                 infobase_password = list(config.INFOBASES_USER.get(infobase.Name).values())[0]
                             else:
@@ -73,11 +72,12 @@ def main():
                                                      infobase_user,
                                                      infobase_password,
                                                      temp_dir)
-                            infobase.ScheduledJobsDenied = current_scheduled_jobs_denied
-                            infobase.SessionsDenied = current_sessions_denied
-                            infobase.PermissionCode = ''
-                            infobase.DeniedMessage = ''
-                            connect.UpdateInfoBase(infobase)
+                            base_in_processes.ScheduledJobsDenied = current_scheduled_jobs_denied
+                            base_in_processes.SessionsDenied = current_sessions_denied
+                            base_in_processes.PermissionCode = ''
+                            base_in_processes.DeniedMessage = ''
+                            connect.UpdateInfoBase(base_in_processes)
+
                         except Exception as e:
                             print(f'\nОшибка доступа к базе: {e}')
                             if config.LOG:
@@ -86,7 +86,8 @@ def main():
                             logger.info(f'Выгрузка базы {infobase.Name} закончена')
                     bar.next()
                 bar.finish()
-            print('Выгрузка баз окончена!')
+        print('Выгрузка баз окончена!')
+
 
     if config.HOW_LONG_KEEP_BACKUP:
         if config.YADISK_UPLOAD:
