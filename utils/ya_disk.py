@@ -28,11 +28,17 @@ def recursive_upload(from_dir, to_dir):
             file_path = posixpath.join(dir_path, file)
             p_sys = p.replace("/", os.path.sep)
             in_path = os.path.join(from_dir, p_sys, file)
-            try:
-                # print(f'Загружаем {in_path} -> {file_path}')
-                yandex_disk.upload(in_path, file_path)
-            except yadisk.exceptions.PathExistsError:
-                pass
+            counter = 1
+            while counter < 11:
+                try:
+                    yandex_disk.upload(in_path, file_path)
+                    break
+                except yadisk.exceptions.PathExistsError:
+                    pass
+                except yadisk.exceptions.ResourceIsLockedError:
+                    # try again
+                    counter += 1
+                    continue
             bar.next()
         bar.finish()
 
@@ -58,6 +64,7 @@ def delete_folder(path):
         yandex_disk.remove(path)
     except yadisk.exceptions.PathNotFoundError:
         print(f'Папка {path} не найдена на Я.Диске')
+
 
 if __name__ == '__main__':
     folder_list = get_list_folder_for_clean('test')
