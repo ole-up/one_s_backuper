@@ -1,4 +1,4 @@
-# Включение логгирования
+# Включение лога работы скрипта
 LOG = True
 
 # Пользователь кластера
@@ -33,7 +33,7 @@ ONE_S_SERVER = 'localhost'
 BACKUP_FOLDER = 'c:\\backup'
 
 # Делать выгрузку на Я.Диск или нет
-YADISK_UPLOAD = False
+YADISK_UPLOAD = True
 
 # Сохранять выгруженный бэкап папку для бэкапа
 SAVE_BACKUP_ON_LOCAL_DISK = True

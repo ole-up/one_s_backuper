@@ -7,7 +7,7 @@ import time
 import logging
 
 import config
-import log.utils_log_config
+from log import utils_log_config
 from comtypes.client import CreateObject
 
 engine = CreateObject('V83.COMConnector')

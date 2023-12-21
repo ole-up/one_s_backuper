@@ -104,6 +104,8 @@ def main():
         print('Копируем выгрузки в локальный бэкап')
         try:
             shutil.copytree(temp_dir, config.BACKUP_FOLDER, dirs_exist_ok=True)
+            if config.LOG:
+                logger.info('Выгрузка скопирована в локальный бэкап')
         except Exception as e:
             print('Не удалось скопировать базы в локальный бэкап')
             if config.LOG:
@@ -114,6 +116,8 @@ def main():
         print('Начинаем выгрузку на Яндекс.Диск: ')
         try:
             ya_disk.recursive_upload(temp_dir, config.YADISK_FOLDER)
+            if config.LOG:
+                logger.info('Выгрузка загружена на Яндекс.Диск')
         except Exception as e:
             print('Не удалось выгрузить бэкапы на Я.Диск')
             if config.LOG:
