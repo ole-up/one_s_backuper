@@ -84,7 +84,7 @@ def main():
                             logger.critical(f'Ошибка выгрузки базы {infobase.name}:\n{e}')
                     if config.LOG:
                         logger.info(f'Выгрузка базы {infobase.Name} закончена')
-                bar.next()
+                    bar.next()
             bar.finish()
         print('Выгрузка баз окончена!')
 
