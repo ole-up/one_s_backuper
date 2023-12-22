@@ -31,11 +31,11 @@ def main():
                     continue
                 connect.AddAuthentication(config.CLUSTER_USER, config.CLUSTER_PASSWORD)
                 bases_in_process = connect.GetInfoBases()
-                print(
-                    f'Обнаружено {len(bases_in_process)} баз на сервере, из них в списке исключений {len(config.EXCLUDE_BASE)}.')
-                print('Начинаем выгрузку баз: ')
+            print(
+                f'Обнаружено {len(bases_in_cluster)} баз на сервере, из них в списке исключений {len(config.EXCLUDE_BASE)}.')
+            print('Начинаем выгрузку баз: ')
             bar = IncrementalBar('Выгрузка баз: ',
-                                    max=len(bases_in_cluster) - len(config.EXCLUDE_BASE))
+                                 max=len(bases_in_cluster) - len(config.EXCLUDE_BASE))
 
             for infobase in bases_in_cluster:
                 if infobase.Name not in config.EXCLUDE_BASE:
@@ -91,7 +91,6 @@ def main():
     if config.YADISK_TRASH_CLEAN:
         if (datetime.date.today().day % config.YADISK_TRASH_PERIOD) == 0:
             ya_disk.empty_trash()
-
 
     if config.HOW_LONG_KEEP_BACKUP:
         if config.YADISK_UPLOAD:
