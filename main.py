@@ -1,3 +1,4 @@
+import datetime
 import logging
 import tempfile
 import shutil
@@ -86,6 +87,10 @@ def main():
                 bar.next()
             bar.finish()
         print('Выгрузка баз окончена!')
+
+    if config.YADISK_TRASH_CLEAN:
+        if (datetime.date.today().day % config.YADISK_TRASH_PERIOD) == 0:
+            ya_disk.empty_trash()
 
 
     if config.HOW_LONG_KEEP_BACKUP:

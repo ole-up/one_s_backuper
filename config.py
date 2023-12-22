@@ -44,6 +44,12 @@ YADISK_TOKEN = 'y0_AgAEA7qkULv3AAkNfQAAAADi9pRMF2Veau_LQQKv-cRhId4uKf6kADk'
 # В какую папку на Я.Диске выгружать бэкап
 YADISK_FOLDER = 'test'
 
+# Очищать или нет корзину Я.Диска
+YADISK_TRASH_CLEAN = True
+
+# Период очистки корзины в днях
+YADISK_TRASH_PERIOD = 7
+
 # Список имен баз, для которых не нужно выгружать бэкап
 # EXCLUDE_BASE = ['test', 'buh', 'zup' ]
 EXCLUDE_BASE = ['sogl', 'gsz_ut', 'gsz_buh', 'test2']

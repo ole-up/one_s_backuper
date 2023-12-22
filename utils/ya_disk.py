@@ -1,6 +1,7 @@
 import datetime
 import os
 import posixpath
+import time
 
 import yadisk
 from progress.bar import IncrementalBar
@@ -64,6 +65,31 @@ def delete_folder(path):
         yandex_disk.remove(path)
     except yadisk.exceptions.PathNotFoundError:
         print(f'Папка {path} не найдена на Я.Диске')
+
+
+def empty_trash():
+    with yandex_disk as client:
+        print('Очищаем корзину Я.Диска...')
+        operation = client.remove_trash('/')
+        print('Это займет некоторое время...')
+
+        if operation is None:
+            print('Корзина очищена.')
+            return
+
+        while True:
+            status = client.get_operation_status(operation.href)
+
+            if status == 'in-progress':
+                time.sleep(5)
+                print('Все еще ждем...')
+            elif status == 'success':
+                print('Успешно!')
+                break
+            else:
+                print(f'Получен странный статус выполнения операции: {repr(status)}')
+                print('Это не нормально')
+                break
 
 
 if __name__ == '__main__':
