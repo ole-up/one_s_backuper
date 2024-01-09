@@ -2,3 +2,4 @@ comtypes==1.2.0
 # yadisk-async==1.4.1
 yadisk==2.0.0
 progress==1.6
+requests==2.31.0

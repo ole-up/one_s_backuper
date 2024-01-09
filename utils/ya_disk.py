@@ -38,6 +38,7 @@ def recursive_upload(from_dir, to_dir):
                     pass
                 except yadisk.exceptions.ResourceIsLockedError:
                     # try again
+                    print(f'{counter} попытка загрузка прошла неудачно, пробуем еще раз')
                     counter += 1
                     continue
             bar.next()

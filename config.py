@@ -52,7 +52,7 @@ YADISK_TRASH_PERIOD = 7
 
 # Список имен баз, для которых не нужно выгружать бэкап
 # EXCLUDE_BASE = ['test', 'buh', 'zup' ]
-EXCLUDE_BASE = ['sogl', 'gsz_ut', 'gsz_buh', 'test2']
+EXCLUDE_BASE = ['test']
 
 # Сколько дней хранить бэкапы. Если 0, то будут хранится все бэкапы
 HOW_LONG_KEEP_BACKUP = 14

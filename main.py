@@ -32,10 +32,10 @@ def main():
                 connect.AddAuthentication(config.CLUSTER_USER, config.CLUSTER_PASSWORD)
                 bases_in_process = connect.GetInfoBases()
             print(
-                f'Обнаружено {len(bases_in_cluster)} баз на сервере, из них в списке исключений {len(config.EXCLUDE_BASE)}.')
+                f'Обнаружено {len(bases_in_cluster)} баз на сервере, в списке исключений {len(config.EXCLUDE_BASE)}.')
             print('Начинаем выгрузку баз: ')
             bar = IncrementalBar('Выгрузка баз: ',
-                                 max=len(bases_in_cluster) - len(config.EXCLUDE_BASE))
+                                 max=len(bases_in_cluster))
 
             for infobase in bases_in_cluster:
                 if infobase.Name not in config.EXCLUDE_BASE:
@@ -84,7 +84,7 @@ def main():
                             logger.critical(f'Ошибка выгрузки базы {infobase.name}:\n{e}')
                     if config.LOG:
                         logger.info(f'Выгрузка базы {infobase.Name} закончена')
-                    bar.next()
+                bar.next()
             bar.finish()
         print('Выгрузка баз окончена!')
 
