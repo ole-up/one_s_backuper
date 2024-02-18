@@ -88,10 +88,6 @@ def main():
             bar.finish()
         print('Выгрузка баз окончена!')
 
-    if config.YADISK_TRASH_CLEAN:
-        if (datetime.date.today().day % config.YADISK_TRASH_PERIOD) == 0:
-            ya_disk.empty_trash()
-
     if config.HOW_LONG_KEEP_BACKUP:
         if config.YADISK_UPLOAD:
             folder_for_delete = ya_disk.get_list_folder_for_clean(
@@ -128,6 +124,10 @@ def main():
                 logger.error(f'Не удалось выгрузить бэкапы на Я.Диск: \n{e}')
 
         print('Выгрузка на Яндекс.Диск закончена!')
+
+    if config.YADISK_TRASH_CLEAN:
+        if (datetime.date.today().day % config.YADISK_TRASH_PERIOD) == 0:
+            ya_disk.empty_trash()
 
     shutil.rmtree(temp_dir)
 

@@ -8,8 +8,14 @@ from progress.bar import IncrementalBar
 
 import config
 
-yandex_disk = yadisk.YaDisk(
-    token=config.YADISK_TOKEN)
+yandex_disk = yadisk.YaDisk(token=config.YADISK_TOKEN, session='httpx')
+# yandex_disk.get_meta(
+#     '/',
+#     n_retries=5,
+#     httpx_args={
+#         "verify": False,
+#     }
+# )
 
 
 # UMK token
@@ -19,26 +25,35 @@ def recursive_upload(from_dir, to_dir):
     for root, dirs, files in os.walk(from_dir):
         p = root.split(from_dir)[1].strip(os.path.sep)
         dir_path = posixpath.join(to_dir, p)
-        try:
-            yandex_disk.mkdir(dir_path)
-            print(f'Создаем папку {dir_path}')
-        except yadisk.exceptions.PathExistsError:
-            print(f'Папка {dir_path} уже существует')
+        counter = 1
+        while counter < 5:
+            try:
+                yandex_disk.mkdir(dir_path)
+                print(f'Создаем папку {dir_path}')
+                break
+            except yadisk.exceptions.PathExistsError:
+                print(f'Папка {dir_path} уже существует')
+                break
+            except yadisk.exceptions.ResourceIsLockedError:
+                # try again
+                print(f'{counter} попытка создания папки прошла неудачно, пробуем еще раз')
+                counter += 1
+                continue
         bar = IncrementalBar('Выгрузка файлов на Я.Диск: ', max=len(files))
         for file in files:
             file_path = posixpath.join(dir_path, file)
             p_sys = p.replace("/", os.path.sep)
             in_path = os.path.join(from_dir, p_sys, file)
             counter = 1
-            while counter < 11:
+            while counter < 5:
                 try:
                     yandex_disk.upload(in_path, file_path)
                     break
                 except yadisk.exceptions.PathExistsError:
-                    pass
+                    break
                 except yadisk.exceptions.ResourceIsLockedError:
                     # try again
-                    print(f'{counter} попытка загрузка прошла неудачно, пробуем еще раз')
+                    print(f'{counter} попытка загрузки прошла неудачно, пробуем еще раз')
                     counter += 1
                     continue
             bar.next()
