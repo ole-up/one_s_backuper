@@ -103,7 +103,7 @@ def main():
     if config.SAVE_BACKUP_ON_LOCAL_DISK:
         print('Копируем выгрузки в локальный бэкап')
         try:
-            shutil.copytree(temp_dir, config.BACKUP_FOLDER, dirs_exist_ok=True)
+            shutil.copytree(temp_dir, config.BACKUP_FOLDER, dirs_exist_ok=True, ignore=shutil.ignore_patterns('*.n1'))
             if config.LOG:
                 logger.info('Выгрузка скопирована в локальный бэкап')
         except Exception as e:

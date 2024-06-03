@@ -2,46 +2,44 @@ import asyncio
 import os
 import posixpath
 
-import yadisk_async
+import yadisk
 
-ya_disk = yadisk_async.YaDisk(
-    token='y0_AgAEA7qkULv3AAjxkwAAAADXvzixOf0e6LtFT4eSyoZWe8fFUQUj9VU')
-#UMK token
+ya_disk = yadisk.AsyncYaDisk(token='y0_AgAEA7qkULv3AAjxkwAAAADXvzixOf0e6LtFT4eSyoZWe8fFUQUj9VU', session="aiohttp")
 
-def recursive_upload(from_dir: str, to_dir: str,
-                     n_parallel_requests=5):
-    """Рекурсивная загрузка файлов на Я.Диск"""
-    loop = asyncio.get_event_loop()
-    try:
+
+async def recursive_upload(from_dir: str, to_dir: str, n_parallel_requests: int = 5):
+    async with yadisk as client:
         async def upload_files(queue):
             while queue:
                 in_path, out_path = queue.pop(0)
-                print("Uploading %s -> %s" % (in_path, out_path))
+
+                print(f"Uploading {in_path} -> {out_path}")
+
                 try:
-                    await ya_disk.upload(in_path, out_path)
-                except yadisk_async.exceptions.PathExistsError:
-                    print("%s already exists" % (out_path,))
+                    await client.upload(in_path, out_path)
+                except yadisk.exceptions.PathExistsError:
+                    print(f"{out_path} already exists")
 
         async def create_dirs(queue):
             while queue:
                 path = queue.pop(0)
 
-                print("Creating directory %s" % (path,))
+                print(f"Creating directory {path}")
 
                 try:
-                    await ya_disk.mkdir(path)
-                except yadisk_async.exceptions.PathExistsError:
-                    print("%s already exists" % (path,))
+                    await client.mkdir(path)
+                except yadisk.exceptions.PathExistsError:
+                    print(f"{path} already exists")
 
         mkdir_queue = []
         upload_queue = []
 
-        print("Creating directory %s" % (to_dir,))
+        print(f"Creating directory {to_dir}")
 
         try:
-            loop.run_until_complete(ya_disk.mkdir(to_dir))
-        except yadisk_async.exceptions.PathExistsError:
-            print("%s already exists" % (to_dir,))
+            await client.mkdir(to_dir)
+        except yadisk.exceptions.PathExistsError:
+            print(f"{to_dir} already exists")
 
         for root, dirs, files in os.walk(from_dir):
             rel_dir_path = root.split(from_dir)[1].strip(os.path.sep)
@@ -58,15 +56,10 @@ def recursive_upload(from_dir: str, to_dir: str,
 
                 upload_queue.append((in_path, out_path))
 
-            tasks = [upload_files(upload_queue) for i in
-                     range(n_parallel_requests)]
-            tasks.extend(
-                create_dirs(mkdir_queue) for i in range(n_parallel_requests))
+            tasks = [upload_files(upload_queue) for i in range(n_parallel_requests)]
+            tasks.extend(create_dirs(mkdir_queue) for i in range(n_parallel_requests))
 
-            loop.run_until_complete(asyncio.gather(*tasks))
-    finally:
-        loop.run_until_complete(ya_disk.close())
-
+            await asyncio.gather(*tasks)
 
 
 def list_dirs(path):
@@ -83,7 +76,8 @@ def list_dirs(path):
 
 
 async def remove_file(path):
-    await ya_disk.remove(path, permanently=True)
+    async with ya_disk as client:
+        await client.remove(path, permanently=True)
 
 
 if __name__ == '__main__':

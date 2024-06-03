@@ -41,21 +41,22 @@ def recursive_upload(from_dir, to_dir):
                 continue
         bar = IncrementalBar('Выгрузка файлов на Я.Диск: ', max=len(files))
         for file in files:
-            file_path = posixpath.join(dir_path, file)
-            p_sys = p.replace("/", os.path.sep)
-            in_path = os.path.join(from_dir, p_sys, file)
-            counter = 1
-            while counter < 5:
-                try:
-                    yandex_disk.upload(in_path, file_path)
-                    break
-                except yadisk.exceptions.PathExistsError:
-                    break
-                except yadisk.exceptions.ResourceIsLockedError:
-                    # try again
-                    print(f'{counter} попытка загрузки прошла неудачно, пробуем еще раз')
-                    counter += 1
-                    continue
+            if not file.lower().endswith('.n1'):
+                file_path = posixpath.join(dir_path, file)
+                p_sys = p.replace("/", os.path.sep)
+                in_path = os.path.join(from_dir, p_sys, file)
+                counter = 1
+                while counter < 5:
+                    try:
+                        yandex_disk.upload(in_path, file_path)
+                        break
+                    except yadisk.exceptions.PathExistsError:
+                        break
+                    except yadisk.exceptions.ResourceIsLockedError:
+                        # try again
+                        print(f'{counter} попытка загрузки прошла неудачно, пробуем еще раз')
+                        counter += 1
+                        continue
             bar.next()
         bar.finish()
 
