@@ -34,7 +34,7 @@ def get_list_folder_for_clean(path: str):
                     datetime.datetime.now().date() - dir_date) > datetime.timedelta(
                     days=config.HOW_LONG_KEEP_BACKUP):
                 if config.KEEP_QUARTERLY_BACKUP:
-                    if dir_date.day == 1 and dir_date.month in [1, 4, 7, 10]:
+                    if dir_date.day == 1 and dir_date.month in [2, 5, 8, 11]:
                         continue
                     folder_for_clean.append(Path(os.path.join(root, dir)))
     return folder_for_clean

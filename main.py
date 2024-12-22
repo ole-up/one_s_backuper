@@ -35,7 +35,7 @@ def main():
                 f'Обнаружено {len(bases_in_cluster)} баз на сервере, в списке исключений {len(config.EXCLUDE_BASE)}.')
             print('Начинаем выгрузку баз: ')
             bar = IncrementalBar('Выгрузка баз: ',
-                                 max=len(bases_in_cluster))
+                                 max=len(bases_in_cluster)-len(config.EXCLUDE_BASE))
 
             for infobase in bases_in_cluster:
                 if infobase.Name not in config.EXCLUDE_BASE:
@@ -88,18 +88,6 @@ def main():
             bar.finish()
         print('Выгрузка баз окончена!')
 
-    if config.HOW_LONG_KEEP_BACKUP:
-        if config.YADISK_UPLOAD:
-            folder_for_delete = ya_disk.get_list_folder_for_clean(
-                config.YADISK_FOLDER)
-            for folder in folder_for_delete:
-                ya_disk.delete_folder(folder)
-        if config.SAVE_BACKUP_ON_LOCAL_DISK:
-            folders_for_delete = disk.get_list_folder_for_clean(
-                config.BACKUP_FOLDER)
-            for folder in folders_for_delete:
-                shutil.rmtree(folder)
-
     if config.SAVE_BACKUP_ON_LOCAL_DISK:
         print('Копируем выгрузки в локальный бэкап')
         try:
@@ -125,11 +113,28 @@ def main():
 
         print('Выгрузка на Яндекс.Диск закончена!')
 
+    if config.HOW_LONG_KEEP_BACKUP:
+        if config.YADISK_UPLOAD:
+            folder_for_delete = ya_disk.get_list_folder_for_clean(
+                config.YADISK_FOLDER)
+            for folder in folder_for_delete:
+                ya_disk.delete_folder(folder)
+        if config.SAVE_BACKUP_ON_LOCAL_DISK:
+            folders_for_delete = disk.get_list_folder_for_clean(
+                config.BACKUP_FOLDER)
+            for folder in folders_for_delete:
+                shutil.rmtree(folder)
+
     if config.YADISK_TRASH_CLEAN:
         if (datetime.date.today().day % config.YADISK_TRASH_PERIOD) == 0:
             ya_disk.empty_trash()
 
-    shutil.rmtree(temp_dir)
+    try:
+        shutil.rmtree(temp_dir)
+    except Exception as e:
+        print(f'Не удалось удалить временную папку: {e}')
+        if config.LOG:
+            logger.error(f'Не удалось удалить временную папку: \n{e}')
 
     one_s.kill_processes()
 

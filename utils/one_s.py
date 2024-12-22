@@ -43,7 +43,8 @@ def terminate_one_s_sessions(cluster_user, cluster_password):
 
 
 def kill_processes():
-    res = subprocess.run(f'{os.getcwd()}\\utils\\taskkill.bat', shell=True, stderr=subprocess.PIPE)
+    res = subprocess.run(f'{os.getcwd()}\\utils\\taskkill.bat', shell=True,
+                         stderr=subprocess.PIPE)
     if res.stderr:
         utils_logger.error(f'Ошибка закрытия активных процессов: {res.stderr}')
     return res
@@ -77,14 +78,26 @@ def backup_server_base(one_s_server, infobase_name, infobase_user,
     if not os.path.exists(backup_folder):
         os.mkdir(backup_folder)
     # print(f'начало выгрузки {datetime.datetime.now()}')
-    res = subprocess.run([f'{platform_path}\\1cestart.exe', 'CONFIG', f'/S {one_s_server}\\{infobase_name}',
-                          f'/N {infobase_user}', f'/P {infobase_password}', f'/DumpIB {backup_folder}\\{backup_name}',
-                          f'/UC {config.PERMISSION_CODE}', '/DisableStartupDialogs', '/DisableSplash'], shell=True,
+    start_time = datetime.datetime.now()
+    res = subprocess.run([f'{platform_path}\\1cestart.exe', 'CONFIG',
+                          f'/S {one_s_server}\\{infobase_name}',
+                          f'/N {infobase_user}', f'/P {infobase_password}',
+                          f'/DumpIB {backup_folder}\\{backup_name}',
+                          f'/UC {config.PERMISSION_CODE}',
+                          '/DisableStartupDialogs', '/DisableSplash'],
+                         shell=True,
                          stderr=subprocess.PIPE)
     if res.stderr:
         utils_logger.error(f'Ошибка при выгрузке бэкапа: {res.stderr}')
-    # print(f'конец выгрузки {datetime.datetime.now()}')
-    time.sleep(180)  # сделана задержка, т.к. процесс выгрузки всегда возвращается с нулевым кодом выполнения команды
+    # дальше тупо ждем когда появится файл выгрузки, т.к. процесс выгрузки
+    # всегда возвращается с нулевым кодом выполнения команды
+    # ну и на всякий случай предусмотрен выход из цикла через заданный
+    # промежуток времени в секундах
+    while not os.path.exists(f'{backup_folder}\\{backup_name}'):
+        if (datetime.datetime.now() - start_time).seconds > 900:
+            utils_logger.error(f'Ошибка при выгрузке бэкапа: {res.stderr}')
+            break
+
 
 
 # clusters = server_agent.GetClusters()
@@ -145,8 +158,10 @@ if __name__ == '__main__':
 
     # backup_server_base('localhost', 'test', 'Администратор', 'test', '.')
     # server_agent.Authenticate('localhost', 'Администратор', 'test')
-    base_list = get_bases_in_cluster(get_clusters()[0], 'Администратор', 'test')
-    process_list = get_working_processes(get_clusters()[0], 'Администратор', 'test')
+    base_list = get_bases_in_cluster(get_clusters()[0], 'Администратор',
+                                     'test')
+    process_list = get_working_processes(get_clusters()[0], 'Администратор',
+                                         'test')
     for process in process_list:
         conn_string = process.HostName + ":" + str(process.MainPort)
         connect = engine.ConnectWorkingProcess(conn_string)

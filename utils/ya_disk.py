@@ -30,10 +30,10 @@ def recursive_upload(from_dir, to_dir):
             try:
                 yandex_disk.mkdir(dir_path)
                 print(f'Создаем папку {dir_path}')
-                break
+                counter = 5
             except yadisk.exceptions.PathExistsError:
                 print(f'Папка {dir_path} уже существует')
-                break
+                counter = 5
             except yadisk.exceptions.ResourceIsLockedError:
                 # try again
                 print(f'{counter} попытка создания папки прошла неудачно, пробуем еще раз')
@@ -41,7 +41,10 @@ def recursive_upload(from_dir, to_dir):
                 continue
         bar = IncrementalBar('Выгрузка файлов на Я.Диск: ', max=len(files))
         for file in files:
+            print(file)
+            print(file.lower().endswith('.n1'))
             if not file.lower().endswith('.n1'):
+                print('ok')
                 file_path = posixpath.join(dir_path, file)
                 p_sys = p.replace("/", os.path.sep)
                 in_path = os.path.join(from_dir, p_sys, file)
